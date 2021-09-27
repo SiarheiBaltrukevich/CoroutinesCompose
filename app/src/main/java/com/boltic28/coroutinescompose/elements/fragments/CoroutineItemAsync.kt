@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -12,23 +11,20 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.boltic28.coroutinescompose.TaskManager
 import com.boltic28.coroutinescompose.elements.buttons.AppTextButton
 import com.boltic28.coroutinescompose.elements.buttons.ButtonStyle
-import com.boltic28.coroutinescompose.workers.BigTask
+import com.boltic28.coroutinescompose.workers.AsyncTask
+import com.boltic28.coroutinescompose.workers.Task
 
 @Composable
-fun CoroutineItem(
-    task: BigTask,
-    syncAction: () -> Unit,
-    asyncAction: () -> Unit,
-    cancelAction: () -> Unit
-) {
+fun CoroutineItemAsync(task: AsyncTask, taskWorker: TaskManager) {
     val work1status = remember { task.observeProgress1() }.collectAsState("")
     val work2status = remember { task.observeProgress2() }.collectAsState("")
     val work3status = remember { task.observeProgress3() }.collectAsState("")
     val result = remember { task.observeResult() }.collectAsState("")
     val statusState = remember { task.observeStatus() }
-        .collectAsState(initial = BigTask.Status.PENDING)
+        .collectAsState(initial = Task.Status.PENDING)
 
     Column(
         horizontalAlignment = Alignment.Start,
@@ -38,7 +34,7 @@ fun CoroutineItem(
             .padding(16.dp)
     ) {
         Text(
-            text = "Coroutine number ${task.id}",
+            text = "Sync/Async test #${task.id}",
             fontWeight = FontWeight.Bold,
             fontSize = 24.sp,
             modifier = Modifier
@@ -62,34 +58,46 @@ fun CoroutineItem(
             AppTextButton(
                 text = "Async",
                 style = ButtonStyle.Green,
-                isEnable = statusState.value == BigTask.Status.PENDING
-            ) {
-                asyncAction.invoke()
-                println("->> task ${task.id} async clicked")
-            }
+                isEnable = statusState.value == Task.Status.PENDING,
+                onClick = { taskWorker.asyncStart(task) }
+            )
             AppTextButton(
                 text = "Sync",
                 style = ButtonStyle.Yellow,
-                isEnable = statusState.value == BigTask.Status.PENDING
-            ) {
-                syncAction.invoke()
-                println("->> task ${task.id} sync clicked")
-            }
+                isEnable = statusState.value == Task.Status.PENDING,
+                onClick = { taskWorker.syncStart(task) }
+            )
             AppTextButton(
                 text = "Cancel",
                 style = ButtonStyle.Red,
-                isEnable = (statusState.value == BigTask.Status.ASYNC_PROGRESS) ||
-                        (statusState.value == BigTask.Status.SYNC_PROGRESS)
-            ) {
-                cancelAction.invoke()
-                println("->> task ${task.id} cancel clicked")
-            }
+                isEnable = (statusState.value == Task.Status.ASYNC_PROGRESS) ||
+                        (statusState.value == Task.Status.SYNC_PROGRESS),
+                onClick = { taskWorker.cancel(task) }
+            )
+//            AppTextButton(
+//                text = "X",
+//                style = ButtonStyle.Remove,
+//                isEnable = (statusState.value == BigTask.Status.CANCELLED) ||
+//                        (statusState.value == BigTask.Status.FINISHED) ||
+//                        (statusState.value == BigTask.Status.PENDING),
+//                onClick = { taskWorker.remove(task) }
+//            )
         }
     }
 }
 
 @Preview(showSystemUi = true)
 @Composable
-fun preview() {
-    CoroutineItem(BigTask(2), {}, {}, {})
+fun Preview() {
+    CoroutineItemAsync(AsyncTask(2), object : TaskManager {
+        override val tasks: MutableList<Task>
+            get() = mutableListOf()
+
+        override fun createTask(type: Task.Type): List<Task> = listOf()
+        override fun asyncStart(task: Task) {}
+        override fun syncStart(task: Task) {}
+        override fun cancel(task: Task) {}
+        override fun remove(task: Task): List<Task> = listOf()
+
+    })
 }

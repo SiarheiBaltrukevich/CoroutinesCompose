@@ -1,7 +1,5 @@
 package com.boltic28.coroutinescompose.elements.buttons
 
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -19,9 +17,15 @@ sealed class ButtonStyle(
     val horizontalPadding: Dp = 12.dp,
     val verticalPadding: Dp = 6.dp
 ) {
+    object Blue : ButtonStyle(
+        defaultText = LightWhite100,
+        defaultBackground = com.boltic28.coroutinescompose.ui.theme.Blue,
+        height = 60.dp
+    )
+
     object MaxWidth : ButtonStyle(
         defaultText = LightWhite100,
-        defaultBackground = Blue,
+        defaultBackground = com.boltic28.coroutinescompose.ui.theme.Blue,
         height = 60.dp,
         width = 420.dp
     )
@@ -33,5 +37,9 @@ sealed class ButtonStyle(
     )
     object Yellow : ButtonStyle(
         defaultBackground = com.boltic28.coroutinescompose.ui.theme.Yellow
+    )
+    object Remove : ButtonStyle(
+        defaultBackground = com.boltic28.coroutinescompose.ui.theme.Red,
+        width = 40.dp
     )
 }

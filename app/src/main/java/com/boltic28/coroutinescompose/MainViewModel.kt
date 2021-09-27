@@ -1,47 +1,33 @@
 package com.boltic28.coroutinescompose
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.boltic28.coroutinescompose.workers.BigTask
-import kotlinx.coroutines.cancelAndJoin
-import kotlinx.coroutines.launch
+import com.boltic28.coroutinescompose.workers.Task
 
-class MainViewModel: ViewModel() {
+class MainViewModel: ViewModel(), TaskManager {
 
     private var taskCounter: Int = 0
 
-    val tasks: MutableList<BigTask> = mutableListOf()
+    override val tasks: MutableList<Task> = mutableListOf()
 
-    fun asyncStart(task: BigTask){
-        task.worker = viewModelScope.launch {
-            task.setStatus(BigTask.Status.ASYNC_PROGRESS)
-            launch { task.task1() }
-            launch { task.task2() }
-            launch { task.task3() }
-        }
+    override fun createTask(type: Task.Type): List<Task>{
+        tasks.add(Task.create(taskCounter++, type))
+        return tasks
     }
 
-    fun syncStart(task: BigTask){
-        task.worker = viewModelScope.launch {
-            task.setStatus(BigTask.Status.SYNC_PROGRESS)
-            task.task1()
-            task.task2()
-            task.task3()
-        }
+    override fun asyncStart(task: Task){
+        task.asyncStart()
     }
 
-    fun startWithResult(task: BigTask){
-
+    override fun syncStart(task: Task){
+        task.syncStart()
     }
 
-    fun cancel(task: BigTask){
-        viewModelScope.launch {
-            task.setStatus(BigTask.Status.CANCELLED)
-            task.worker.cancelAndJoin()
-        }
+    override fun cancel(task: Task){
+        task.cancel()
     }
 
-    fun createTask(): BigTask = BigTask(taskCounter++).also {
-        tasks.add(it)
+    override fun remove(task: Task): List<Task>{
+        tasks.remove(task)
+        return tasks
     }
 }
