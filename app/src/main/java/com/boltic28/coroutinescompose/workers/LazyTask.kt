@@ -4,7 +4,7 @@ class LazyTask(override val id: Int) : Task() {
 
     override val type = Type.LAZY
 
-    override fun syncStart() {
+    override fun start() {
         TODO("Not yet implemented")
     }
 }

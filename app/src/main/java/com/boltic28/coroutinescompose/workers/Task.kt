@@ -6,18 +6,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.util.*
 
+const val EMPTY_STRING = ""
 const val START_VALUE = 0
 const val FINISHED_VALUE = 60
+private const val PROGRESS_ITEM = "|"
 
 abstract class Task {
-
-    companion object {
-        fun create(id: Int, type: Type): Task = when(type){
-                Type.ASYNC -> AsyncTask(id)
-                Type.AWAIT -> AwaitTask(id)
-                Type.LAZY -> LazyTask(id)
-            }
-    }
 
     abstract val id: Int
     abstract val type: Type
@@ -26,33 +20,40 @@ abstract class Task {
 
     private var startTime: Long = 0
 
-    private var resultTime = MutableStateFlow("")
+    private var resultTime = MutableStateFlow(EMPTY_STRING)
     fun observeResult(): StateFlow<String> = resultTime.asStateFlow()
 
     private val status = MutableStateFlow(Status.PENDING)
     fun observeStatus(): StateFlow<Status> = status.asStateFlow()
 
-    fun cancel(){
+    open fun cancel() {
         CoroutineScope(worker).launch {
             setStatus(Status.CANCELLED)
             worker.cancelAndJoin()
         }
     }
 
-    abstract fun syncStart()
+    abstract fun start()
 
-    open fun asyncStart() { syncStart() }
+    open fun altStart1() {
+        start()
+    }
+
+    open fun altStart2() {
+        start()
+    }
+
+    protected fun getTime(): Long = Date().time - startTime
 
     protected fun convertProgressToString(taskProgress: Int): String {
         val res = StringBuilder()
         for (i in START_VALUE..taskProgress) {
-            if (i != START_VALUE) res.append("|")
+            if (i != START_VALUE) res.append(PROGRESS_ITEM)
         }
         return res.toString()
     }
 
-    protected fun setStatus(newStatus: Status) {
-        CoroutineScope(worker).launch {
+    protected suspend fun setStatus(newStatus: Status) {
             when (newStatus) {
                 Status.ASYNC_PROGRESS, Status.SYNC_PROGRESS ->
                     startTime = Date().time
@@ -60,9 +61,18 @@ abstract class Task {
                     resultTime.emit("Finished in ${Date().time - startTime} millis")
                 Status.CANCELLED ->
                     resultTime.emit("Cancelled in ${Date().time - startTime} millis")
-                else -> {}
+                else -> {
+                }
             }
             status.emit(newStatus)
+    }
+
+    companion object {
+        fun create(id: Int, type: Type): Task = when (type) {
+            Type.ASYNC -> AsyncTask(id)
+            Type.AWAIT -> AwaitTask(id)
+            Type.LAZY -> LazyTask(id)
+            Type.CONT -> ContTask(id)
         }
     }
 
@@ -71,6 +81,6 @@ abstract class Task {
     }
 
     enum class Type(val isReady: Boolean) {
-        ASYNC(true), AWAIT(true), LAZY(false)
+        ASYNC(true), AWAIT(true), LAZY(false), CONT(true)
     }
 }

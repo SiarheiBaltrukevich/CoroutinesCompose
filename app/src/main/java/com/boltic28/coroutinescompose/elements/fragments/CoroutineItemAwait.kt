@@ -57,7 +57,7 @@ fun CoroutineItemAwait(task: AwaitTask, taskWorker: TaskManager) {
                 text = "START",
                 style = ButtonStyle.Green,
                 isEnable = statusState.value == Task.Status.PENDING,
-                onClick = { taskWorker.syncStart(task) }
+                onClick = { taskWorker.start(task) }
             )
             AppTextButton(
                 text = "Cancel",
@@ -86,8 +86,9 @@ fun PreviewDef() {
             get() = mutableListOf()
 
         override fun createTask(type: Task.Type): List<Task> = listOf()
-        override fun asyncStart(task: Task) {}
-        override fun syncStart(task: Task) {}
+        override fun start(task: Task) {}
+        override fun altStart1(task: Task) {}
+        override fun altStart2(task: Task) {}
         override fun cancel(task: Task) {}
         override fun remove(task: Task): List<Task> = listOf()
     })

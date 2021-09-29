@@ -14,14 +14,12 @@ import androidx.compose.ui.unit.sp
 import com.boltic28.coroutinescompose.TaskManager
 import com.boltic28.coroutinescompose.elements.buttons.AppTextButton
 import com.boltic28.coroutinescompose.elements.buttons.ButtonStyle
-import com.boltic28.coroutinescompose.workers.AsyncTask
+import com.boltic28.coroutinescompose.workers.ContTask
 import com.boltic28.coroutinescompose.workers.Task
 
 @Composable
-fun CoroutineItemAsync(task: AsyncTask, taskWorker: TaskManager) {
-    val work1status = remember { task.observeProgress1() }.collectAsState("")
-    val work2status = remember { task.observeProgress2() }.collectAsState("")
-    val work3status = remember { task.observeProgress3() }.collectAsState("")
+fun CoroutineItemCont(task: ContTask, taskWorker: TaskManager) {
+    val report = remember { task.observeReport() }.collectAsState("")
     val result = remember { task.observeResult() }.collectAsState("")
     val statusState = remember { task.observeStatus() }
         .collectAsState(initial = Task.Status.PENDING)
@@ -34,15 +32,13 @@ fun CoroutineItemAsync(task: AsyncTask, taskWorker: TaskManager) {
             .padding(16.dp)
     ) {
         Text(
-            text = "Sync/Async test #${task.id}",
+            text = "Continuation test, task #${task.id}",
             fontWeight = FontWeight.Bold,
             fontSize = 24.sp,
             modifier = Modifier
                 .align(alignment = Alignment.CenterHorizontally)
         )
-        Text(text = "work 1 status: ${work1status.value}")
-        Text(text = "work 2 status: ${work2status.value}")
-        Text(text = "work 3 status: ${work3status.value}")
+        Text(text = "Log: ${report.value}")
         Text(
             text = "Coroutine status: ${statusState.value}",
             fontWeight = FontWeight.Bold,
@@ -56,16 +52,16 @@ fun CoroutineItemAsync(task: AsyncTask, taskWorker: TaskManager) {
             modifier = Modifier.align(alignment = Alignment.CenterHorizontally)
         ) {
             AppTextButton(
-                text = "Async",
+                text = "START C",
+                style = ButtonStyle.Green,
+                isEnable = statusState.value == Task.Status.PENDING,
+                onClick = { taskWorker.start(task) }
+            )
+            AppTextButton(
+                text = "START R",
                 style = ButtonStyle.Green,
                 isEnable = statusState.value == Task.Status.PENDING,
                 onClick = { taskWorker.altStart1(task) }
-            )
-            AppTextButton(
-                text = "Sync",
-                style = ButtonStyle.Yellow,
-                isEnable = statusState.value == Task.Status.PENDING,
-                onClick = { taskWorker.start(task) }
             )
             AppTextButton(
                 text = "Cancel",
@@ -86,10 +82,11 @@ fun CoroutineItemAsync(task: AsyncTask, taskWorker: TaskManager) {
     }
 }
 
+
 @Preview(showSystemUi = true)
 @Composable
-fun Preview() {
-    CoroutineItemAsync(AsyncTask(2), object : TaskManager {
+fun PreviewCont() {
+    CoroutineItemCont(ContTask(2), object : TaskManager {
         override val tasks: MutableList<Task>
             get() = mutableListOf()
 
@@ -99,6 +96,5 @@ fun Preview() {
         override fun altStart2(task: Task) {}
         override fun cancel(task: Task) {}
         override fun remove(task: Task): List<Task> = listOf()
-
     })
 }

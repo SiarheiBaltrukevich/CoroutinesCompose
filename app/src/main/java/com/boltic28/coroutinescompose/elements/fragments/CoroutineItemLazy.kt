@@ -75,8 +75,9 @@ fun PreviewLazy() {
             get() = mutableListOf()
 
         override fun createTask(type: Task.Type): List<Task> = listOf()
-        override fun asyncStart(task: Task) {}
-        override fun syncStart(task: Task) {}
+        override fun start(task: Task) {}
+        override fun altStart1(task: Task) {}
+        override fun altStart2(task: Task) {}
         override fun cancel(task: Task) {}
         override fun remove(task: Task): List<Task> = listOf()
 

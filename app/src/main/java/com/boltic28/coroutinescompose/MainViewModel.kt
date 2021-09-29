@@ -14,12 +14,16 @@ class MainViewModel: ViewModel(), TaskManager {
         return tasks
     }
 
-    override fun asyncStart(task: Task){
-        task.asyncStart()
+    override fun altStart1(task: Task){
+        task.altStart1()
     }
 
-    override fun syncStart(task: Task){
-        task.syncStart()
+    override fun altStart2(task: Task){
+        task.altStart2()
+    }
+
+    override fun start(task: Task){
+        task.start()
     }
 
     override fun cancel(task: Task){

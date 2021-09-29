@@ -16,7 +16,7 @@ class AsyncTask(override val id: Int): Task() {
 
     override val type = Type.ASYNC
 
-    override fun asyncStart(){
+    override fun altStart1(){
         worker = CoroutineScope(Dispatchers.Default).launch {
             setStatus(Status.ASYNC_PROGRESS)
             launch { task1() }
@@ -25,7 +25,7 @@ class AsyncTask(override val id: Int): Task() {
         }
     }
 
-    override fun syncStart(){
+    override fun start(){
         worker = CoroutineScope(Dispatchers.Default).launch {
             setStatus(Status.SYNC_PROGRESS)
             task1()
@@ -71,7 +71,7 @@ class AsyncTask(override val id: Int): Task() {
         checkProgress()
     }
 
-    private fun checkProgress() {
+    private suspend fun checkProgress() {
         val isFinished = task1Progress == FINISHED_VALUE &&
                 task2Progress == FINISHED_VALUE &&
                 task3Progress == FINISHED_VALUE

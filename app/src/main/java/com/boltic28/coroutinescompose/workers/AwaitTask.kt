@@ -11,7 +11,7 @@ class AwaitTask(override val id: Int) : Task() {
 
     override val type = Type.AWAIT
 
-    override fun syncStart() {
+    override fun start() {
         worker = CoroutineScope(Dispatchers.Default).launch {
             setStatus(Status.SYNC_PROGRESS)
             setReport("waiting for def result")
@@ -24,9 +24,17 @@ class AwaitTask(override val id: Int) : Task() {
         }
     }
 
+    override fun cancel() {
+        CoroutineScope(worker).launch {
+            setReport("coroutine was canceled. No result.")
+            //call coroutine inside another one
+            super.cancel()
+        }
+    }
+
     private var defProgress: Int = START_VALUE
 
-    private var report = MutableStateFlow("wait for result")
+    private var report = MutableStateFlow("loading....")
     fun observeReport(): StateFlow<String> = report.asStateFlow()
 
     private val progressBar = MutableStateFlow(convertProgressToString(defProgress))

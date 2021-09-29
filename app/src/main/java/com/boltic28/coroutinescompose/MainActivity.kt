@@ -19,12 +19,10 @@ import com.boltic28.coroutinescompose.elements.buttons.AppTextButton
 import com.boltic28.coroutinescompose.elements.buttons.ButtonStyle
 import com.boltic28.coroutinescompose.elements.fragments.CoroutineItemAwait
 import com.boltic28.coroutinescompose.elements.fragments.CoroutineItemAsync
+import com.boltic28.coroutinescompose.elements.fragments.CoroutineItemCont
 import com.boltic28.coroutinescompose.elements.fragments.CoroutineItemLazy
 import com.boltic28.coroutinescompose.ui.theme.CoroutinesComposeTheme
-import com.boltic28.coroutinescompose.workers.AsyncTask
-import com.boltic28.coroutinescompose.workers.AwaitTask
-import com.boltic28.coroutinescompose.workers.Task
-import com.boltic28.coroutinescompose.workers.LazyTask
+import com.boltic28.coroutinescompose.workers.*
 
 class MainActivity : ComponentActivity() {
 
@@ -47,10 +45,11 @@ class MainActivity : ComponentActivity() {
                         ) {
                             coroutines.forEach { task ->
                                 item {
-                                    when (task.type) {
-                                        Task.Type.ASYNC -> CoroutineItemAsync(task as AsyncTask, viewModel)
-                                        Task.Type.AWAIT -> CoroutineItemAwait(task as AwaitTask, viewModel)
-                                        Task.Type.LAZY -> CoroutineItemLazy(task as LazyTask, viewModel)
+                                    when (task) {
+                                        is AsyncTask -> CoroutineItemAsync(task, viewModel)
+                                        is AwaitTask -> CoroutineItemAwait(task, viewModel)
+                                        is LazyTask -> CoroutineItemLazy(task, viewModel)
+                                        is ContTask -> CoroutineItemCont(task, viewModel)
                                     }
                                 }
                             }
