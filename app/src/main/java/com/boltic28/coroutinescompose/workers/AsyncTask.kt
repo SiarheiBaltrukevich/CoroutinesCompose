@@ -18,19 +18,23 @@ class AsyncTask(override val id: Int): Task() {
 
     override fun altStart1(){
         worker = CoroutineScope(Dispatchers.Default).launch {
+            log("Async is started")
             setStatus(Status.ASYNC_PROGRESS)
             launch { task1() }
             launch { task2() }
             launch { task3() }
+            log("Async is finished")
         }
     }
 
     override fun start(){
         worker = CoroutineScope(Dispatchers.Default).launch {
+            log("Sync is started")
             setStatus(Status.SYNC_PROGRESS)
             task1()
             task2()
             task3()
+            log("Sync is finished")
         }
     }
 
@@ -48,26 +52,32 @@ class AsyncTask(override val id: Int): Task() {
     fun observeProgress3(): StateFlow<String> = progress3.asStateFlow()
 
     private suspend fun task1() {
+        log("Task1 is started")
         while (task1Progress < FINISHED_VALUE) {
             delay(TASK_1_STEP_MILLIS)
             progress1.emit(convertProgressToString(++task1Progress))
         }
+        log("Task1 is finished")
         checkProgress()
     }
 
     private suspend fun task2() {
+        log("Task2 is started")
         while (task2Progress < FINISHED_VALUE) {
             delay(TASK_2_STEP_MILLIS)
             progress2.emit(convertProgressToString(++task2Progress))
         }
+        log("Task2 is finished")
         checkProgress()
     }
 
     private suspend fun task3() {
+        log("Task3 is started")
         while (task3Progress < FINISHED_VALUE) {
             delay(TASK_3_STEP_MILLIS)
             progress3.emit(convertProgressToString(++task3Progress))
         }
+        log("Task3 is finished")
         checkProgress()
     }
 

@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.lang.Exception
 import java.lang.StringBuilder
+import kotlin.concurrent.thread
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
@@ -26,9 +27,6 @@ class ContTask(override val id: Int) : Task() {
     override fun altStart1() {
         start(false)
     }
-
-    private var report = MutableStateFlow("")
-    fun observeReport(): StateFlow<String> = report.asStateFlow()
 
     private fun start(useContinuation: Boolean) {
         worker = CoroutineScope(Dispatchers.Default).launch {
@@ -81,10 +79,12 @@ class ContTask(override val id: Int) : Task() {
             suspendCoroutine { continuation ->
                 kotlin.run {
                     try {
-                        for (i in 0..4){
-                            Thread.sleep(1000)
+                        thread {
+                            for (i in 0..4) {
+                                Thread.sleep(1000)
+                            }
+                            continuation.resume(ADDITIONAL_RESULT)
                         }
-                        continuation.resume(ADDITIONAL_RESULT)
                     }catch (e: Exception){
                         continuation.resumeWithException(e)
                     }
@@ -111,14 +111,5 @@ class ContTask(override val id: Int) : Task() {
             log("work is failed")
         }
         setStatus(Status.FINISHED)
-    }
-
-    private suspend fun log(msg: String) {
-        report.emit(
-            StringBuilder()
-                .append(report.value)
-                .append("\n${getTime()} mill : $msg")
-                .toString()
-        )
     }
 }

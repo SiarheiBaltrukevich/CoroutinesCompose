@@ -26,8 +26,12 @@ abstract class Task {
     private val status = MutableStateFlow(Status.PENDING)
     fun observeStatus(): StateFlow<Status> = status.asStateFlow()
 
+    private var log = MutableStateFlow("")
+    fun observeLog(): StateFlow<String> = log.asStateFlow()
+
     open fun cancel() {
         CoroutineScope(worker).launch {
+            log("canceling...")
             setStatus(Status.CANCELLED)
             worker.cancelAndJoin()
         }
@@ -43,7 +47,7 @@ abstract class Task {
         start()
     }
 
-    protected fun getTime(): Long = Date().time - startTime
+    private fun getTime(): Long = Date().time - startTime
 
     protected fun convertProgressToString(taskProgress: Int): String {
         val res = StringBuilder()
@@ -65,6 +69,15 @@ abstract class Task {
                 }
             }
             status.emit(newStatus)
+    }
+
+    protected suspend fun log(msg: String) {
+        log.emit(
+            java.lang.StringBuilder()
+                .append(log.value)
+                .append("\n${getTime()} mill : $msg")
+                .toString()
+        )
     }
 
     companion object {

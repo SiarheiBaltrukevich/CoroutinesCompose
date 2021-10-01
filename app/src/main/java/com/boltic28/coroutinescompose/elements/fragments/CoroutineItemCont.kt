@@ -19,7 +19,7 @@ import com.boltic28.coroutinescompose.workers.Task
 
 @Composable
 fun CoroutineItemCont(task: ContTask, taskWorker: TaskManager) {
-    val report = remember { task.observeReport() }.collectAsState("")
+    val log = remember { task.observeLog() }.collectAsState("")
     val result = remember { task.observeResult() }.collectAsState("")
     val statusState = remember { task.observeStatus() }
         .collectAsState(initial = Task.Status.PENDING)
@@ -38,7 +38,7 @@ fun CoroutineItemCont(task: ContTask, taskWorker: TaskManager) {
             modifier = Modifier
                 .align(alignment = Alignment.CenterHorizontally)
         )
-        Text(text = "Log: ${report.value}")
+        Text(text = "Log: ${log.value}")
         Text(
             text = "Coroutine status: ${statusState.value}",
             fontWeight = FontWeight.Bold,

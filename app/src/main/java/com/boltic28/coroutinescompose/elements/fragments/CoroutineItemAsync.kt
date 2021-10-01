@@ -22,6 +22,7 @@ fun CoroutineItemAsync(task: AsyncTask, taskWorker: TaskManager) {
     val work1status = remember { task.observeProgress1() }.collectAsState("")
     val work2status = remember { task.observeProgress2() }.collectAsState("")
     val work3status = remember { task.observeProgress3() }.collectAsState("")
+    val log = remember { task.observeLog() }.collectAsState("")
     val result = remember { task.observeResult() }.collectAsState("")
     val statusState = remember { task.observeStatus() }
         .collectAsState(initial = Task.Status.PENDING)
@@ -48,6 +49,7 @@ fun CoroutineItemAsync(task: AsyncTask, taskWorker: TaskManager) {
             fontWeight = FontWeight.Bold,
             modifier = Modifier.align(alignment = Alignment.CenterHorizontally)
         )
+        Text(text = "Log: ${log.value}")
         Text(
             text = result.value,
             modifier = Modifier.align(alignment = Alignment.End)

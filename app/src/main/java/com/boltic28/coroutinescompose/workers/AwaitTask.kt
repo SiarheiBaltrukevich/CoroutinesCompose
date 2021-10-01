@@ -13,13 +13,18 @@ class AwaitTask(override val id: Int) : Task() {
 
     override fun start() {
         worker = CoroutineScope(Dispatchers.Default).launch {
+            log("Sync is started")
             setStatus(Status.SYNC_PROGRESS)
             setReport("waiting for def result")
 
-            val report: Deferred<String> = async { waitResult() }
+            val report: Deferred<String> = async {
+                log("Async is started")
+                waitResult()
+            }
 
             // code will continue after awaiting the result
             setReport(report.await())
+            log("result is used")
             setStatus(Status.FINISHED)
         }
     }
@@ -51,6 +56,7 @@ class AwaitTask(override val id: Int) : Task() {
             delay(DEF_STEP_MILLIS)
             progressBar.emit(convertProgressToString(++defProgress))
         }
+        log("result is ready")
         return "deffered result is READY"
     }
 }

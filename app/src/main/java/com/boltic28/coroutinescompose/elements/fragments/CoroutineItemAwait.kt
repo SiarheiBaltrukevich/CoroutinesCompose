@@ -19,6 +19,7 @@ import com.boltic28.coroutinescompose.workers.Task
 
 @Composable
 fun CoroutineItemAwait(task: AwaitTask, taskWorker: TaskManager) {
+    val log = remember { task.observeLog() }.collectAsState("")
     val report = remember { task.observeReport() }.collectAsState("")
     val progress = remember { task.observeProgressBar() }.collectAsState("")
     val result = remember { task.observeResult() }.collectAsState("")
@@ -41,6 +42,7 @@ fun CoroutineItemAwait(task: AwaitTask, taskWorker: TaskManager) {
         )
         Text(text = "Report: ${report.value}")
         Text(text = "work 1 status: ${progress.value}")
+        Text(text = "Log: ${log.value}")
         Text(
             text = "Coroutine status: ${statusState.value}",
             fontWeight = FontWeight.Bold,
