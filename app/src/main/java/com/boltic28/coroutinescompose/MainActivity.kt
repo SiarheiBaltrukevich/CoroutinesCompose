@@ -10,11 +10,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewModelScope
 import com.boltic28.coroutinescompose.elements.buttons.AppTextButton
 import com.boltic28.coroutinescompose.elements.buttons.ButtonStyle
 import com.boltic28.coroutinescompose.elements.fragments.CoroutineItemAwait
@@ -23,6 +25,7 @@ import com.boltic28.coroutinescompose.elements.fragments.CoroutineItemCont
 import com.boltic28.coroutinescompose.elements.fragments.CoroutineItemLazy
 import com.boltic28.coroutinescompose.ui.theme.CoroutinesComposeTheme
 import com.boltic28.coroutinescompose.workers.*
+import kotlinx.coroutines.cancel
 
 class MainActivity : ComponentActivity() {
 
@@ -36,6 +39,9 @@ class MainActivity : ComponentActivity() {
 
                     val coroutines: SnapshotStateList<Task> = remember { mutableStateListOf() }
                     coroutines.swapList(viewModel.tasks)
+
+                    val scopeStatus = remember {viewModel.scopeStatus}
+                        .collectAsState(initial = MainViewModel.ScopeStatus.READY)
 
                     Column(
                         modifier = Modifier.fillMaxSize()
@@ -65,6 +71,23 @@ class MainActivity : ComponentActivity() {
                                 ) {
                                     coroutines.swapList(viewModel.createTask(type))
                                 }
+                            }
+                        }
+                        if (scopeStatus.value == MainViewModel.ScopeStatus.READY) {
+                            AppTextButton(
+                                text = "Cancel ALL",
+                                style = ButtonStyle.MaxWidthRed,
+                                isEnable = coroutines.isNotEmpty()
+                            ) {
+                                viewModel.cancelAll("User finish all the coroutines")
+                            }
+                        } else {
+                            AppTextButton(
+                                text = "Restart SCOPE",
+                                style = ButtonStyle.MaxWidthBlue,
+                                isEnable = coroutines.isNotEmpty()
+                            ) {
+                                viewModel.restartScope()
                             }
                         }
                     }

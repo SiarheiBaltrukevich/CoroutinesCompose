@@ -1,42 +1,42 @@
 package com.boltic28.coroutinescompose.workers
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 
 private const val TASK_1_STEP_MILLIS = 200L
 private const val TASK_2_STEP_MILLIS = 70L
 private const val TASK_3_STEP_MILLIS = 130L
 
-class AsyncTask(override val id: Int): Task() {
+class AsyncTask(
+    override val scope: CoroutineScope,
+    override val id: Int
+) : Task() {
 
     override val type = Type.ASYNC
 
-    override fun altStart1(){
-        worker = CoroutineScope(Dispatchers.Default).launch {
+    override fun altStart1(): Job =
+        scope.launch {
             log("Async is started")
-            setStatus(Status.ASYNC_PROGRESS)
+            setStatus(Status.ASYNC_START)
+            setStatus(Status.IN_PROGRESS)
             launch { task1() }
             launch { task2() }
             launch { task3() }
             log("Async is finished")
-        }
-    }
+        }.also { worker = it }
 
-    override fun start(){
-        worker = CoroutineScope(Dispatchers.Default).launch {
+    override fun start(): Job =
+        scope.launch {
             log("Sync is started")
-            setStatus(Status.SYNC_PROGRESS)
+            setStatus(Status.SYNC_START)
+            setStatus(Status.IN_PROGRESS)
             task1()
             task2()
             task3()
             log("Sync is finished")
-        }
-    }
+        }.also { worker = it }
 
     private var task1Progress: Int = START_VALUE
     private var task2Progress: Int = START_VALUE

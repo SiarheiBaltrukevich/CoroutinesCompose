@@ -1,11 +1,7 @@
 package com.boltic28.coroutinescompose.workers
 
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import java.lang.Exception
-import java.lang.StringBuilder
 import kotlin.concurrent.thread
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -16,29 +12,28 @@ private const val TASK_1_RESULT = "task 1 finished"
 private const val ADDITIONAL_RESULT = "additional res"
 
 
-class ContTask(override val id: Int) : Task() {
+class ContTask(
+    override val scope: CoroutineScope,
+    override val id: Int
+) : Task() {
 
     override val type: Type = Type.LAZY
 
-    override fun start() {
-        start(true)
-    }
+    override fun start(): Job = start(true)
 
-    override fun altStart1() {
-        start(false)
-    }
+    override fun altStart1(): Job = start(false)
 
-    private fun start(useContinuation: Boolean) {
-        worker = CoroutineScope(Dispatchers.Default).launch {
-            setStatus(Status.SYNC_PROGRESS)
+    private fun start(useContinuation: Boolean): Job =
+        scope.launch {
+            setStatus(Status.SYNC_START)
+            setStatus(Status.IN_PROGRESS)
             log("isContinuationUse: $useContinuation")
             delay(STEP_MILLIS)
 
             val res1 = task1(useContinuation)
             val res2 = task2(res1, useContinuation)
             showResult(res2)
-        }
-    }
+        }.also { worker = it }
 
     private suspend fun task1(useContinuation: Boolean = false): String {
         log("task 1 is started.")

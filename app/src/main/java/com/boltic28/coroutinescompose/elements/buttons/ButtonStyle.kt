@@ -23,12 +23,19 @@ sealed class ButtonStyle(
         height = 60.dp
     )
 
-    object MaxWidth : ButtonStyle(
+    object MaxWidthBlue : ButtonStyle(
         defaultText = LightWhite100,
         defaultBackground = com.boltic28.coroutinescompose.ui.theme.Blue,
         height = 60.dp,
         width = 420.dp
     )
+    object MaxWidthRed : ButtonStyle(
+        defaultText = LightWhite100,
+        defaultBackground = com.boltic28.coroutinescompose.ui.theme.Red,
+        height = 60.dp,
+        width = 420.dp
+    )
+
     object Green : ButtonStyle(
         defaultBackground = com.boltic28.coroutinescompose.ui.theme.Green
     )

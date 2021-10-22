@@ -16,6 +16,9 @@ import com.boltic28.coroutinescompose.elements.buttons.AppTextButton
 import com.boltic28.coroutinescompose.elements.buttons.ButtonStyle
 import com.boltic28.coroutinescompose.workers.AwaitTask
 import com.boltic28.coroutinescompose.workers.Task
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlin.coroutines.EmptyCoroutineContext
 
 @Composable
 fun CoroutineItemAwait(task: AwaitTask, taskWorker: TaskManager) {
@@ -64,8 +67,9 @@ fun CoroutineItemAwait(task: AwaitTask, taskWorker: TaskManager) {
             AppTextButton(
                 text = "Cancel",
                 style = ButtonStyle.Red,
-                isEnable = (statusState.value == Task.Status.ASYNC_PROGRESS) ||
-                        (statusState.value == Task.Status.SYNC_PROGRESS),
+                isEnable = (statusState.value == Task.Status.ASYNC_START) ||
+                        (statusState.value == Task.Status.SYNC_START) ||
+                        (statusState.value == Task.Status.IN_PROGRESS),
                 onClick = { taskWorker.cancel(task) }
             )
 //            AppTextButton(
@@ -83,15 +87,18 @@ fun CoroutineItemAwait(task: AwaitTask, taskWorker: TaskManager) {
 @Preview(showSystemUi = true)
 @Composable
 fun PreviewDef() {
-    CoroutineItemAwait(AwaitTask(2), object : TaskManager {
+    CoroutineItemAwait(AwaitTask(CoroutineScope(EmptyCoroutineContext),2), object : TaskManager {
         override val tasks: MutableList<Task>
             get() = mutableListOf()
 
         override fun createTask(type: Task.Type): List<Task> = listOf()
-        override fun start(task: Task) {}
-        override fun altStart1(task: Task) {}
-        override fun altStart2(task: Task) {}
+        override fun start(task: Task): Job = Job()
+        override fun altStart1(task: Task): Job = Job()
+        override fun altStart2(task: Task): Job = Job()
         override fun cancel(task: Task) {}
+        override fun cancelAll(msg: String) {}
+        override fun restartScope() {}
         override fun remove(task: Task): List<Task> = listOf()
+
     })
 }

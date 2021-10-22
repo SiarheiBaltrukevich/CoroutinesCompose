@@ -7,27 +7,29 @@ import kotlinx.coroutines.flow.asStateFlow
 
 private const val DEF_STEP_MILLIS = 50L
 
-class AwaitTask(override val id: Int) : Task() {
+class AwaitTask(
+    override val scope: CoroutineScope,
+    override val id: Int
+) : Task() {
 
     override val type = Type.AWAIT
 
-    override fun start() {
-        worker = CoroutineScope(Dispatchers.Default).launch {
-            log("Sync is started")
-            setStatus(Status.SYNC_PROGRESS)
-            setReport("waiting for def result")
+    override fun start() = scope.launch {
+        log("Sync is started")
+        setStatus(Status.SYNC_START)
+        setStatus(Status.IN_PROGRESS)
+        setReport("waiting for def result")
 
-            val report: Deferred<String> = async {
-                log("Async is started")
-                waitResult()
-            }
-
-            // code will continue after awaiting the result
-            setReport(report.await())
-            log("result is used")
-            setStatus(Status.FINISHED)
+        val report: Deferred<String> = async {
+            log("Async is started")
+            waitResult()
         }
-    }
+
+        // code will continue after awaiting the result
+        setReport(report.await())
+        log("result is used")
+        setStatus(Status.FINISHED)
+    }.also { worker = it }
 
     override fun cancel() {
         CoroutineScope(worker).launch {

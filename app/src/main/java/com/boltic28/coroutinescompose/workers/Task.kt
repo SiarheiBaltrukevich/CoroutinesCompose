@@ -13,6 +13,7 @@ private const val PROGRESS_ITEM = "|"
 
 abstract class Task {
 
+    abstract val scope: CoroutineScope
     abstract val id: Int
     abstract val type: Type
 
@@ -26,7 +27,7 @@ abstract class Task {
     private val status = MutableStateFlow(Status.PENDING)
     fun observeStatus(): StateFlow<Status> = status.asStateFlow()
 
-    private var log = MutableStateFlow("")
+    private var log = MutableStateFlow(EMPTY_STRING)
     fun observeLog(): StateFlow<String> = log.asStateFlow()
 
     open fun cancel() {
@@ -37,15 +38,11 @@ abstract class Task {
         }
     }
 
-    abstract fun start()
+    abstract fun start(): Job
 
-    open fun altStart1() {
-        start()
-    }
+    open fun altStart1(): Job = start()
 
-    open fun altStart2() {
-        start()
-    }
+    open fun altStart2(): Job = start()
 
     private fun getTime(): Long = Date().time - startTime
 
@@ -59,8 +56,10 @@ abstract class Task {
 
     protected suspend fun setStatus(newStatus: Status) {
             when (newStatus) {
-                Status.ASYNC_PROGRESS, Status.SYNC_PROGRESS ->
+                Status.ASYNC_START, Status.SYNC_START, Status.LAZY_START ->
                     startTime = Date().time
+                Status.IN_PROGRESS ->
+                    log("status IN_PROGRESS")
                 Status.FINISHED ->
                     resultTime.emit("Finished in ${Date().time - startTime} millis")
                 Status.CANCELLED ->
@@ -81,19 +80,20 @@ abstract class Task {
     }
 
     companion object {
-        fun create(id: Int, type: Type): Task = when (type) {
-            Type.ASYNC -> AsyncTask(id)
-            Type.AWAIT -> AwaitTask(id)
-            Type.LAZY -> LazyTask(id)
-            Type.CONT -> ContTask(id)
+        fun create(scope: CoroutineScope, id: Int, type: Type): Task = when (type) {
+            Type.ASYNC -> AsyncTask(scope, id)
+            Type.AWAIT -> AwaitTask(scope, id)
+            Type.LAZY -> LazyTask(scope, id)
+            Type.CONT -> ContTask(scope, id)
+            Type.CONTEXT -> ContextTask(scope, id)
         }
     }
 
     enum class Status {
-        PENDING, SYNC_PROGRESS, ASYNC_PROGRESS, CANCELLED, FINISHED
+        PENDING, LAZY_START, SYNC_START, ASYNC_START, IN_PROGRESS, CANCELLED, FINISHED
     }
 
     enum class Type(val isReady: Boolean) {
-        ASYNC(true), AWAIT(true), LAZY(false), CONT(true)
+        ASYNC(true), AWAIT(true), LAZY(true), CONT(true), CONTEXT(false)
     }
 }
