@@ -14,7 +14,7 @@ class AsyncTask(
     override val id: Int
 ) : Task() {
 
-    override val type = Type.ASYNC
+    override val type = Type.ASC
 
     override fun altStart1(): Job =
         scope.launch {

@@ -20,7 +20,8 @@ sealed class ButtonStyle(
     object Blue : ButtonStyle(
         defaultText = LightWhite100,
         defaultBackground = com.boltic28.coroutinescompose.ui.theme.Blue,
-        height = 60.dp
+        height = 60.dp,
+        width = 60.dp
     )
 
     object MaxWidthBlue : ButtonStyle(

@@ -12,7 +12,7 @@ class AwaitTask(
     override val id: Int
 ) : Task() {
 
-    override val type = Type.AWAIT
+    override val type = Type.AWT
 
     override fun start() = scope.launch {
         log("Sync is started")

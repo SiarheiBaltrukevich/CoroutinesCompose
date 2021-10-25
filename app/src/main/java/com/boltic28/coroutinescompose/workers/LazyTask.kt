@@ -10,7 +10,7 @@ class LazyTask(
     override val id: Int
 ) : Task() {
 
-    override val type = Type.LAZY
+    override val type = Type.LAZ
 
     private var taskProgress: Int = START_VALUE
 

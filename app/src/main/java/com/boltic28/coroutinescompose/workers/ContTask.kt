@@ -17,7 +17,7 @@ class ContTask(
     override val id: Int
 ) : Task() {
 
-    override val type: Type = Type.LAZY
+    override val type: Type = Type.LAZ
 
     override fun start(): Job = start(true)
 

@@ -16,16 +16,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.viewModelScope
 import com.boltic28.coroutinescompose.elements.buttons.AppTextButton
 import com.boltic28.coroutinescompose.elements.buttons.ButtonStyle
-import com.boltic28.coroutinescompose.elements.fragments.CoroutineItemAwait
-import com.boltic28.coroutinescompose.elements.fragments.CoroutineItemAsync
-import com.boltic28.coroutinescompose.elements.fragments.CoroutineItemCont
-import com.boltic28.coroutinescompose.elements.fragments.CoroutineItemLazy
+import com.boltic28.coroutinescompose.elements.fragments.*
 import com.boltic28.coroutinescompose.ui.theme.CoroutinesComposeTheme
 import com.boltic28.coroutinescompose.workers.*
-import kotlinx.coroutines.cancel
 
 class MainActivity : ComponentActivity() {
 
@@ -52,6 +47,7 @@ class MainActivity : ComponentActivity() {
                             coroutines.forEach { task ->
                                 item {
                                     when (task) {
+                                        is ContextTask -> CoroutineItemContext(task, viewModel)
                                         is AsyncTask -> CoroutineItemAsync(task, viewModel)
                                         is AwaitTask -> CoroutineItemAwait(task, viewModel)
                                         is LazyTask -> CoroutineItemLazy(task, viewModel)

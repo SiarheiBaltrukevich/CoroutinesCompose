@@ -81,11 +81,11 @@ abstract class Task {
 
     companion object {
         fun create(scope: CoroutineScope, id: Int, type: Type): Task = when (type) {
-            Type.ASYNC -> AsyncTask(scope, id)
-            Type.AWAIT -> AwaitTask(scope, id)
-            Type.LAZY -> LazyTask(scope, id)
-            Type.CONT -> ContTask(scope, id)
-            Type.CONTEXT -> ContextTask(scope, id)
+            Type.ASC -> AsyncTask(scope, id)
+            Type.AWT -> AwaitTask(scope, id)
+            Type.LAZ -> LazyTask(scope, id)
+            Type.CON -> ContTask(scope, id)
+            Type.CTX -> ContextTask(scope, id)
         }
     }
 
@@ -94,6 +94,6 @@ abstract class Task {
     }
 
     enum class Type(val isReady: Boolean) {
-        ASYNC(true), AWAIT(true), LAZY(true), CONT(true), CONTEXT(false)
+        ASC(true), AWT(true), LAZ(true), CON(true), CTX(true)
     }
 }

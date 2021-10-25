@@ -1,64 +1,45 @@
 package com.boltic28.coroutinescompose.workers
 
+import com.boltic28.coroutinescompose.elements.util.Storage
+import com.boltic28.coroutinescompose.elements.util.User
 import kotlinx.coroutines.*
-import java.lang.Exception
-import kotlin.coroutines.AbstractCoroutineContextElement
-import kotlin.coroutines.CoroutineContext
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 class ContextTask(
     override val scope: CoroutineScope,
     override val id: Int
 ) : Task() {
 
-    private val user = User(23, "Artur", 67)
-
-    override val type: Type = Type.CONTEXT
+    override val type: Type = Type.CTX
 
     override fun start(): Job =
-        scope.launch(Dispatchers.Unconfined + user) {
+        scope.launch(Dispatchers.Unconfined + Storage.randomUser) {
+            log("Coroutine is started")
+            setStatus(Status.SYNC_START)
+            task(this.coroutineContext[User])
+        }.also { worker = it }
 
+    private var taskProgress: Int = START_VALUE
+
+    private val progressBar = MutableStateFlow(convertProgressToString(taskProgress))
+    fun observeProgressBar(): StateFlow<String> = progressBar.asStateFlow()
+
+
+    private suspend fun task(user: User?) {
+        setStatus(Status.IN_PROGRESS)
+        user?.let { u ->
+            val taskN = Storage.nextTaskNumber
+            log("Task #$taskN for ${u.name} is started")
+            while (taskProgress < FINISHED_VALUE) {
+                delay(100)
+                progressBar.emit(convertProgressToString(++taskProgress))
+            }
+            u.tasks.add("Task #$taskN is completed")
+            setStatus(Status.FINISHED)
+            log("Task is finished")
+            log( "user ${user.name} already has ${user.tasks.size} completed tasks")
         }
-
-    fun cancelEx1() {
-
-        val user = User(1, "Alex", 56)
-        val context = Job() + Dispatchers.Main + user
-        val scope = CoroutineScope(context)
-
-        val user2 = User(3, "Mike", 23)
-        scope.launch {
-            val userFromContext = this.coroutineContext[User]
-
-            launch(Dispatchers.IO + user2) { }
-        }
-
-        val job = scope.async(start = CoroutineStart.LAZY) { delay(30000) }
-        val job4 = scope.launch(start = CoroutineStart.LAZY) { }
-
-        scope.launch {
-            val result = job.await()
-
-            job4.start()
-            job4.join()
-        }
-
-        val job1 = scope.launch { delay(10000) }
-
-        val job2 = scope.async(start = CoroutineStart.LAZY) { delay(20000) }
-        val job3 = scope.launch { delay(20000) }
-        scope.cancel()
-        scope.cancel("user closed the page")
-        scope.cancel(CancellationException("child coroutine error", Exception()))
-
-        job.isActive; job.isCancelled; job.isCompleted
-
     }
-}
-
-data class User(
-    val id: Long,
-    val name: String,
-    val age: Int
-) : AbstractCoroutineContextElement(User) {
-    companion object Key : CoroutineContext.Key<User>
 }
